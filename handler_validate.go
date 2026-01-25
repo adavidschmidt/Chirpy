@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"slices"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -12,7 +14,7 @@ func handlerValidateChirp(w http.ResponseWriter, r *http.Request) {
 		Body string `json:"body"`
 	}
 	type returnVal struct {
-		Valid bool `json:"valid"`
+		CleanedBody string `json:"cleaned_body"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -28,7 +30,20 @@ func handlerValidateChirp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	cleanedBody := helperCleanBody(params.Body)
+
 	respondWithJSON(w, http.StatusOK, returnVal{
-		Valid: true,
+		CleanedBody: cleanedBody,
 	})
+}
+
+func helperCleanBody(s string) string {
+	words := []string{"kerfuffle", "sharbert", "fornax"}
+	sSplit := strings.Split(s, " ")
+	for i, word := range sSplit {
+		if slices.Contains(words, strings.ToLower(word)) {
+			sSplit[i] = "****"
+		}
+	}
+	return strings.Join(sSplit, " ")
 }
