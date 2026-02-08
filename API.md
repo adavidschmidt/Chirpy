@@ -1,92 +1,87 @@
-# API Documentation
+# API Documentation for Chirpy
 
-## Overview
-This documentation provides an overview of the API endpoints available for the Chirpy application. Each endpoint details the request methods, required parameters, and possible response formats.
+## Chirps Endpoints
 
-## API Endpoints
+### Get Chirps
+- **Endpoint:** `GET /chirps`
+- **Description:** Retrieve a list of chirps.
+- **Response:**
+  - 200 OK
+  - 404 Not Found
 
-### 1. Get All Posts
-- **Method**: GET  
-- **Endpoint**: `/api/posts`  
-- **Request Parameters**:  
-  - `page`: (optional) integer for pagination, default is 1  
-  - `limit`: (optional) integer to set the number of posts per page, default is 10  
-- **Response Format**:  
+### Create Chirp
+- **Endpoint:** `POST /chirps`
+- **Description:** Create a new chirp.
+- **Request Body:
   ```json
   {
-    "posts": [
-      {
-        "id": "string",
-        "title": "string",
-        "content": "string",
-        "author": "string",
-        "created_at": "string"
-      }
-    ],
-    "total": "integer"
-  }
-  ```
-
-### 2. Create a New Post
-- **Method**: POST  
-- **Endpoint**: `/api/posts`  
-- **Request Body**:  
-  ```json
-  {
-    "title": "string",
-    "content": "string",
-    "author": "string"
-  }
-  ```
-- **Response Format**:  
-  ```json
-  {
-    "id": "string",
-    "title": "string",
-    "content": "string",
-    "author": "string",
-    "created_at": "string"
-  }
-  ```
-
-### 3. Update a Post
-- **Method**: PUT  
-- **Endpoint**: `/api/posts/{postId}`  
-- **Request Body**:  
-  ```json
-  {
-    "title": "string",
     "content": "string"
   }
   ```
-- **Response Format**:  
-  ```json
-  {
-    "id": "string",
-    "title": "string",
-    "content": "string",
-    "author": "string",
-    "created_at": "string"
-  }
-  ```
+- **Response:**
+  - 201 Created
+  - 400 Bad Request
 
-### 4. Delete a Post
-- **Method**: DELETE  
-- **Endpoint**: `/api/posts/{postId}`  
-- **Response Format**:  
-  ```json
-  {
-    "message": "string"
-  }
-  ```
+## Users Endpoints
 
-## Error Handling
-- **Response Format**:  
+### Get Users
+- **Endpoint:** `GET /users`
+- **Description:** Retrieve a list of users.
+- **Response:**
+  - 200 OK
+  - 404 Not Found
+
+### Create User
+- **Endpoint:** `POST /users`
+- **Description:** Register a new user.
+- **Request Body:
   ```json
   {
-    "error": {
-      "code": "integer",
-      "message": "string"
-    }
+    "username": "string",
+    "password": "string"
   }
   ```
+- **Response:**
+  - 201 Created
+  - 400 Bad Request
+
+## Authentication Endpoints
+
+### Login
+- **Endpoint:** `POST /auth/login`
+- **Description:** Authenticate a user and receive a token.
+- **Request Body:
+  ```json
+  {
+    "username": "string",
+    "password": "string"
+  }
+  ```
+- **Response:**
+  - 200 OK
+  - 401 Unauthorized
+
+### Logout
+- **Endpoint:** `POST /auth/logout`
+- **Description:** Logout the authenticated user.
+- **Response:**
+  - 200 OK
+  - 401 Unauthorized
+
+## Health Check Endpoints
+
+### Health Check
+- **Endpoint:** `GET /health`
+- **Description:** Check the health of the API.
+- **Response:**
+  - 200 OK
+  - 503 Service Unavailable
+
+## Metrics Endpoints
+
+### Get Metrics
+- **Endpoint:** `GET /metrics`
+- **Description:** Retrieve system metrics.
+- **Response:**
+  - 200 OK
+  - 500 Internal Server Error
