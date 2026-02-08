@@ -24,3 +24,13 @@ UPDATE users
 SET updated_at = NOW(), email = $1, hashed_password = $2
 WHERE id = $3
 RETURNING *;
+
+-- name: AddChirpyRed :exec
+UPDATE users
+SET is_chirpy_red = 'True'
+WHERE id = $1;
+
+-- name: RemoveChirpyRed :exec
+UPDATE users
+SET is_chirpy_red = 'False'
+WHERE id = $1;

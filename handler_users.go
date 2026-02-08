@@ -12,11 +12,12 @@ import (
 )
 
 type User struct {
-	ID        uuid.UUID `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Email     string    `json:"email"`
-	Password  string    `json:"-"`
+	ID          uuid.UUID `json:"id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	Email       string    `json:"email"`
+	Password    string    `json:"-"`
+	IsChirpyRed bool      `json:"is_chirpy_red"`
 }
 
 func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
@@ -39,6 +40,7 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 	hashedPassword, err := auth.HashPassword(params.Password)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Issues with the provided password")
+		return
 	}
 
 	createdUser, err := cfg.db.CreateUser(r.Context(), database.CreateUserParams{
@@ -53,10 +55,11 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 
 	respondWithJSON(w, http.StatusCreated, response{
 		User: User{
-			ID:        createdUser.ID,
-			CreatedAt: createdUser.CreatedAt,
-			UpdatedAt: createdUser.UpdatedAt,
-			Email:     createdUser.Email,
+			ID:          createdUser.ID,
+			CreatedAt:   createdUser.CreatedAt,
+			UpdatedAt:   createdUser.UpdatedAt,
+			Email:       createdUser.Email,
+			IsChirpyRed: createdUser.IsChirpyRed,
 		},
 	})
 }
@@ -78,14 +81,17 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&params)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Bad login data")
+		return
 	}
 	user, err := cfg.db.GetUser(r.Context(), params.Email)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Cannot find user")
+		return
 	}
 	goodPassword, err := auth.CheckPasswordHash(params.Password, user.HashedPassword)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error checking password")
+		return
 	}
 	if !goodPassword {
 		respondWithError(w, http.StatusUnauthorized, "Password is incorrect")
@@ -115,10 +121,11 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJSON(w, http.StatusOK, response{
 		User: User{
-			ID:        user.ID,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
-			Email:     user.Email,
+			ID:          user.ID,
+			CreatedAt:   user.CreatedAt,
+			UpdatedAt:   user.UpdatedAt,
+			Email:       user.Email,
+			IsChirpyRed: user.IsChirpyRed,
 		},
 		Token:        token,
 		RefreshToken: tokenString.Token,
@@ -167,13 +174,15 @@ func (cfg *apiConfig) handlerUpdateUser(w http.ResponseWriter, r *http.Request) 
 	})
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "error updating user data")
+		return
 	}
 
 	returnUser := User{
-		ID:        user.ID,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-		Email:     user.Email,
+		ID:          user.ID,
+		CreatedAt:   user.CreatedAt,
+		UpdatedAt:   user.UpdatedAt,
+		Email:       user.Email,
+		IsChirpyRed: user.IsChirpyRed,
 	}
 
 	respondWithJSON(w, http.StatusOK, returnUser)
