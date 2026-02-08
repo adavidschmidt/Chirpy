@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"slices"
+	"sort"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -86,7 +87,19 @@ func helperCleanBody(s string) string {
 }
 
 func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
+	s := r.URL.Query().Get("author_id")
+	authorID := uuid.Nil
+	var err error
+	if s == "" {
+		authorID = uuid.Nil
+	} else {
+		authorID, err = uuid.Parse(s)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, "invalid author id")
+		}
+	}
 
+	sortDir := r.URL.Query().Get("sort")
 	data, err := cfg.db.GetChirps(r.Context())
 	if err != nil {
 		log.Printf("Problem getting chirps: %s", err)
@@ -94,6 +107,9 @@ func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 	}
 	returnChirps := []Chirp{}
 	for _, chirp := range data {
+		if chirp.UserID != authorID && authorID != uuid.Nil {
+			continue
+		}
 		returnChirps = append(returnChirps, Chirp{
 			ID:        chirp.ID,
 			CreatedAt: chirp.CreatedAt,
@@ -101,7 +117,20 @@ func (cfg *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 			Body:      chirp.Body,
 			Userid:    chirp.UserID,
 		})
+
 	}
+	if sortDir != "" {
+		if sortDir == "desc" {
+			sort.Slice(returnChirps, func(i, j int) bool {
+				return returnChirps[i].CreatedAt.After(returnChirps[j].CreatedAt)
+			})
+		} else {
+			sort.Slice(returnChirps, func(i, j int) bool {
+				return returnChirps[i].CreatedAt.Before(returnChirps[j].CreatedAt)
+			})
+		}
+	}
+
 	respondWithJSON(w, 200, returnChirps)
 }
 
